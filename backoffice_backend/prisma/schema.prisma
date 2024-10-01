@@ -1,0 +1,45 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Payment {
+  id          Int       @id @default(autoincrement())
+  supplierId  Int
+  paymentType String
+  amount      Float
+  dueDate     DateTime
+  store       String
+  status      String
+  description String? // Opcional
+  boletoCode  String? // Opcional
+  paymentDate DateTime?
+
+  supplier Supplier @relation(fields: [supplierId], references: [id])
+}
+
+model Supplier {
+  id       Int       @id @default(autoincrement())
+  name     String
+  cnpj     String
+  address  String
+  payments Payment[] // Relacionamento com pagamentos
+}
+
+model User {
+  id       Int    @id @default(autoincrement())
+  username String @unique
+  password String
+  role     Role   @default(USER)
+
+  @@map("users")
+}
+
+enum Role {
+  ADMIN
+  USER
+}
