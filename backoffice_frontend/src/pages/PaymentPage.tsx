@@ -236,7 +236,13 @@ const PaymentPage = () => {
           <DropdownTrigger>
             <Button variant="bordered">{selectedStatus}</Button>
           </DropdownTrigger>
-          <DropdownMenu onSelectionChange={(keys) => setSelectedStatus(Array.from(keys).join(''))}>
+          <DropdownMenu 
+                    aria-label="Single selection example"
+                    variant="flat"
+                    disallowEmptySelection
+                    selectionMode="single"
+                    selectedKeys={selectedStatus}
+                    onSelectionChange={(keys) => setSelectedStatus(Array.from(keys).join(''))}>
             <DropdownItem key="Todos">Todos</DropdownItem>
             <DropdownItem key="Aberto">Aberto</DropdownItem>
             <DropdownItem key="Pago">Pago</DropdownItem>

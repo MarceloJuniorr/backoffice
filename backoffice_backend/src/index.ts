@@ -7,6 +7,9 @@ import authRoutes from './routes/authRoutes';
 import paymentRoutes from './routes/paymentRoutes';
 import supplierRoutes from './routes/supplierRoutes';
 import usersRoutes from './routes/usersRoutes';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 
 const app = express();
