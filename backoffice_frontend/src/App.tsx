@@ -35,7 +35,7 @@ const App = () => {
     <NextUIProvider>
       <Router>
         <div className="flex">
-        <div className="flex-1 p-4" style={{overflowX: "hidden"}}>
+        <div className="flex-1 p-4">
         <Layout>
             <Routes>
               <Route path="/" element={<Login />} />
