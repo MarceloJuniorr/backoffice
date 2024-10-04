@@ -1,8 +1,8 @@
 import prisma from './prismaClient';
 
 export interface User {
-  username: string,
-  password: string, // Lembre-se de criptografar a senha
+  id: number,
+  role: string,
 }
 
 // Criar um novo usuário

@@ -4,6 +4,8 @@
     "module": "commonjs",
     "strict": true,
     "esModuleInterop": true,
+    "outDir": "./dist", // Especifica o diretório de saída
+    "rootDir": "./", // Inclui todo o diretório do projeto
     "typeRoots": [
       "./src/types",
       "./node_modules/@types"
