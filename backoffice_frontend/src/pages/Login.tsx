@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { Input, Button, Card, Spacer } from "@nextui-org/react";
-import { EyeFilledIcon, EyeSlashFilledIcon } from "../components/Icons";
 import { useNavigate } from 'react-router-dom';
 
 import useAxios from "../api";

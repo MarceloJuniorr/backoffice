@@ -2,9 +2,11 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 
+const backendUrl = process.env.REACT_APP_API_URL || 'http://localhost:3000'
+
 // Cria a instância do Axios fora do useEffect
 const api = axios.create({
-  baseURL: 'http://localhost:3000', // Defina a URL base da API
+  baseURL: backendUrl, // Defina a URL base da API
 });
 
 // Hook customizado que encapsula a lógica do interceptor com `useNavigate`

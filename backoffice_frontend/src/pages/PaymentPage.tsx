@@ -44,11 +44,8 @@ const PaymentPage = () => {
   });
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
   const [supplierSearch, setSupplierSearch] = useState<string>(''); // Campo para busca de fornecedor
-
   const [isAddModalOpen, setAddModalOpen] = useState(false);
   const [isEditModalOpen, setEditModalOpen] = useState(false);
-
-  const api = useAxios();
 
   const [dateRange, setDateRange] = useState<RangeValue<DateValue>>({
     start: parseAbsoluteToLocal(moment().startOf('month').toISOString()), 
@@ -56,6 +53,8 @@ const PaymentPage = () => {
   });
 
   const [selectedStatus, setSelectedStatus] = useState<string>('Todos');
+
+  const api = useAxios();
 
   const convertToJSDate = (dateValue: DateValue | undefined) => {
     if (dateValue) {
@@ -185,9 +184,6 @@ const PaymentPage = () => {
     <div className="container mx-auto px-4">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl">Contas a Pagar</h2>
-        <Button onClick={() => setAddModalOpen(true)} startContent={<FaPlus />}>
-          Adicionar Conta a Pagar
-        </Button>
       </div>
 
       {/* Totalizadores com Ícones */}
@@ -231,26 +227,34 @@ const PaymentPage = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-        <DateRangePicker value={dateRange} onChange={setDateRange} />
-        <Dropdown>
+        <DateRangePicker 
+          aria-label="Selecionar intervalo de datas" 
+          value={dateRange} 
+          onChange={setDateRange} 
+        />
+        <Dropdown aria-label="Selecionar status do pagamento">
           <DropdownTrigger>
             <Button variant="bordered">{selectedStatus}</Button>
           </DropdownTrigger>
           <DropdownMenu 
-                    aria-label="Single selection example"
-                    variant="flat"
-                    disallowEmptySelection
-                    selectionMode="single"
-                    selectedKeys={selectedStatus}
-                    onSelectionChange={(keys) => setSelectedStatus(Array.from(keys).join(''))}>
+            aria-label="Seleção de status"
+            variant="flat"
+            disallowEmptySelection
+            selectionMode="single"
+            selectedKeys={selectedStatus}
+            onSelectionChange={(keys) => {setSelectedStatus(Array.from(keys).join(''))}}
+          >
             <DropdownItem key="Todos">Todos</DropdownItem>
             <DropdownItem key="Aberto">Aberto</DropdownItem>
             <DropdownItem key="Pago">Pago</DropdownItem>
           </DropdownMenu>
         </Dropdown>
+        <Button onClick={() => setAddModalOpen(true)} startContent={<FaPlus />} aria-label="Adicionar nova conta a pagar">
+          Adicionar Conta a Pagar
+        </Button>
       </div>
 
-      <Table>
+      <Table aria-label="Tabela de contas a pagar">
         <TableHeader>
           <TableColumn>Fornecedor</TableColumn>
           <TableColumn>Valor</TableColumn>
@@ -266,14 +270,14 @@ const PaymentPage = () => {
               <TableCell>{moment(item.dueDate).format('DD/MM/YYYY')}</TableCell>
               <TableCell>{item.status}</TableCell>
               <TableCell>
-                <Button size="sm" onClick={() => openEditModal(item)}>
+                <Button size="sm" onClick={() => openEditModal(item)} aria-label="Editar pagamento">
                   <FaEdit />
                 </Button>
-                <Button size="sm" onClick={() => item.boletoCode && copyBoletoCode(item.boletoCode)}>
+                <Button size="sm" onClick={() => item.boletoCode && copyBoletoCode(item.boletoCode)} aria-label="Copiar código do boleto">
                   <FaCopy />
                 </Button>
                 {item.status !== 'Pago' && (
-                  <Button size="sm" onClick={() => markAsPaid(item)}>
+                  <Button size="sm" onClick={() => markAsPaid(item)} aria-label="Marcar como pago">
                     <FaRegMoneyBillAlt />
                   </Button>
                 )}
@@ -296,8 +300,9 @@ const PaymentPage = () => {
                   value={supplierSearch}
                   onChange={(e) => handleSupplierSearch(e.target.value)}
                   fullWidth
+                  aria-label="Campo de busca de fornecedor"
                 />
-                <Dropdown>
+                <Dropdown aria-label="Selecionar fornecedor">
                   <DropdownTrigger>
                     <Button variant="bordered">{suppliers.find(s => s.id === newPayment.supplierId)?.name || 'Selecione um Fornecedor'}</Button>
                   </DropdownTrigger>
@@ -315,6 +320,7 @@ const PaymentPage = () => {
                   value={newPayment.amount.toString()}
                   onChange={(e) => setNewPayment({ ...newPayment, amount: parseFloat(e.target.value) })}
                   fullWidth
+                  aria-label="Campo de valor"
                 />
                 <Spacer y={1} />
                 <Input
@@ -323,6 +329,7 @@ const PaymentPage = () => {
                   value={newPayment.dueDate}
                   onChange={(e) => setNewPayment({ ...newPayment, dueDate: e.target.value })}
                   fullWidth
+                  aria-label="Campo de data de vencimento"
                 />
                 <Spacer y={1} />
                 <Input
@@ -330,24 +337,39 @@ const PaymentPage = () => {
                   value={newPayment.boletoCode}
                   onChange={(e) => setNewPayment({ ...newPayment, boletoCode: e.target.value })}
                   fullWidth
+                  aria-label="Campo de código do boleto"
                 />
                 <Spacer y={1} />
-                <Dropdown>
-                  <DropdownTrigger>
-                    <Button variant="bordered">{newPayment.paymentType}</Button>
-                  </DropdownTrigger>
-                  <DropdownMenu onSelectionChange={(keys) => setNewPayment({ ...newPayment, paymentType: Array.from(keys).join('') })}>
-                    {paymentTypes.map((type) => (
-                      <DropdownItem key={type}>{type}</DropdownItem>
+                <Dropdown aria-label="Selecionar tipo de pagamento">
+          <DropdownTrigger>
+            <Button variant="bordered">{newPayment.paymentType}</Button>
+          </DropdownTrigger>
+          <DropdownMenu 
+            aria-label="Selecione o tipo de pagamento"
+            variant="flat"
+            disallowEmptySelection
+            selectionMode="single"
+            selectedKeys={newPayment.paymentType}
+            onSelectionChange={(keys) => {setNewPayment({...newPayment, paymentType: Array.from(keys).join('')})}}
+          >
+                    {paymentTypes.map((types) => (
+                      <DropdownItem key={types}>{types}</DropdownItem>
                     ))}
-                  </DropdownMenu>
-                </Dropdown>
+          </DropdownMenu>
+        </Dropdown>
                 <Spacer y={1} />
-                <Dropdown>
+                <Dropdown aria-label="Selecionar loja">
                   <DropdownTrigger>
                     <Button variant="bordered">{newPayment.store}</Button>
                   </DropdownTrigger>
-                  <DropdownMenu onSelectionChange={(keys) => setNewPayment({ ...newPayment, store: Array.from(keys).join('') })}>
+                  <DropdownMenu 
+                                aria-label="Selecione a loja"
+                                variant="flat"
+                                disallowEmptySelection
+                                selectionMode="single"
+                                selectedKeys={newPayment.store}
+                  
+                    onSelectionChange={(keys) => setNewPayment({ ...newPayment, store: Array.from(keys).join('') })}>
                     {stores.map((store) => (
                       <DropdownItem key={store}>{store}</DropdownItem>
                     ))}
@@ -370,16 +392,24 @@ const PaymentPage = () => {
             <>
               <ModalHeader>Editar Conta a Pagar</ModalHeader>
               <ModalBody>
-                <Dropdown>
-                  <DropdownTrigger>
-                    <Button variant="bordered">{suppliers.find(s => s.id === selectedPayment?.supplierId)?.name || 'Selecione um Fornecedor'}</Button>
-                  </DropdownTrigger>
-                  <DropdownMenu onSelectionChange={(keys) => setSelectedPayment({ ...selectedPayment!, supplierId: Number(Array.from(keys).join('')) })}>
-                    {suppliers.map((supplier) => (
-                      <DropdownItem key={supplier.id}>{supplier.name} - {supplier.cnpj}</DropdownItem>
-                    ))}
-                  </DropdownMenu>
-                </Dropdown>
+              <Dropdown aria-label="Selecionar fornecedor">
+                <DropdownTrigger>
+                  <Button variant="bordered">
+                    {suppliers.find(s => s.id === newPayment.supplierId)?.name || 'Selecione um Fornecedor'}
+                  </Button>
+                </DropdownTrigger>
+              <DropdownMenu 
+                  aria-label="Lista de fornecedores"
+                  onSelectionChange={(keys) => {
+                  const selectedKey = Array.from(keys).join(''); // Garantir que selecionamos o valor
+                  setNewPayment({ ...newPayment, supplierId: Number(selectedKey) });
+    }}
+  >
+    {filteredSuppliers.map((supplier) => (
+      <DropdownItem key={supplier.id}>{supplier.name} - {supplier.cnpj}</DropdownItem>
+    ))}
+  </DropdownMenu>
+</Dropdown>
                 <Spacer y={1} />
                 <Input
                   label="Valor"
@@ -387,6 +417,7 @@ const PaymentPage = () => {
                   value={selectedPayment?.amount.toString() || ''}
                   onChange={(e) => setSelectedPayment({ ...selectedPayment!, amount: parseFloat(e.target.value) })}
                   fullWidth
+                  aria-label="Campo de valor"
                 />
                 <Spacer y={1} />
                 <Input
@@ -395,6 +426,7 @@ const PaymentPage = () => {
                   value={selectedPayment?.dueDate || ''}
                   onChange={(e) => setSelectedPayment({ ...selectedPayment!, dueDate: e.target.value })}
                   fullWidth
+                  aria-label="Campo de data de vencimento"
                 />
                 <Spacer y={1} />
                 <Input
@@ -402,20 +434,27 @@ const PaymentPage = () => {
                   value={selectedPayment?.boletoCode || ''}
                   onChange={(e) => setSelectedPayment({ ...selectedPayment!, boletoCode: e.target.value })}
                   fullWidth
+                  aria-label="Campo de código do boleto"
                 />
                 <Spacer y={1} />
-                <Dropdown>
-                  <DropdownTrigger>
-                    <Button variant="bordered">{selectedPayment?.paymentType || 'Selecione o tipo de pagamento'}</Button>
-                  </DropdownTrigger>
-                  <DropdownMenu onSelectionChange={(keys) => setSelectedPayment({ ...selectedPayment!, paymentType: Array.from(keys).join('') })}>
-                    {paymentTypes.map((type) => (
-                      <DropdownItem key={type}>{type}</DropdownItem>
-                    ))}
-                  </DropdownMenu>
-                </Dropdown>
+<Dropdown aria-label="Selecionar tipo de pagamento">
+  <DropdownTrigger>
+    <Button variant="bordered">{newPayment.paymentType}</Button>
+  </DropdownTrigger>
+  <DropdownMenu 
+    aria-label="Tipos de pagamento"
+    onSelectionChange={(keys) => {
+      const selectedKey = Array.from(keys).join(''); // Converter o Set em string
+      setNewPayment({ ...newPayment, paymentType: selectedKey });
+    }}
+  >
+    {paymentTypes.map((type) => (
+      <DropdownItem key={type}>{type}</DropdownItem>
+    ))}
+  </DropdownMenu>
+</Dropdown>
                 <Spacer y={1} />
-                <Dropdown>
+                <Dropdown aria-label="Selecionar loja">
                   <DropdownTrigger>
                     <Button variant="bordered">{selectedPayment?.store || 'Selecione a Loja'}</Button>
                   </DropdownTrigger>
