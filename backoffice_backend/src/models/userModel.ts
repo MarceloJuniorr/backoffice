@@ -1,5 +1,12 @@
 import prisma from './prismaClient';
 
+export interface User {
+  id: number,
+  username: string,
+  password: string, // Lembre-se de criptografar a senha
+  role: string,
+}
+
 // Criar um novo usuário
 export const createUser = async (userData: any) => {
   const user = await prisma.user.create({
