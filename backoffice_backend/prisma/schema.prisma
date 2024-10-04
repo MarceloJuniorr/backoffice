@@ -18,16 +18,13 @@ model Payment {
   description String? // Opcional
   boletoCode  String? // Opcional
   paymentDate DateTime?
-
-  supplier Supplier @relation(fields: [supplierId], references: [id])
 }
 
 model Supplier {
-  id       Int       @id @default(autoincrement())
-  name     String
-  cnpj     String
-  address  String
-  payments Payment[] // Relacionamento com pagamentos
+  id      Int    @id @default(autoincrement())
+  name    String
+  cnpj    String
+  address String
 }
 
 model User {

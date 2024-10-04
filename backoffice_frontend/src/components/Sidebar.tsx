@@ -22,8 +22,8 @@ const Sidebar = () => {
   return (
     <>
       {/* Botão do menu hambúrguer */}
-      <div className="fixed top-4 left-4 z-50">
-        <button onClick={toggleSidebar} className="text-3xl p-2">
+      <div className="fixed top-2 left-2 z-50" style={{backgroundColor: "gray", borderRadius: 10 }} >
+        <button onClick={toggleSidebar} className="text-2xl p-1">
           {isOpen ? <FaTimes /> : <FaBars />}
         </button>
       </div>
@@ -44,9 +44,6 @@ const Sidebar = () => {
           </Link>
           <Link to="/payments" className="hover:bg-gray-700 p-2 rounded">
             Contas a Pagar
-          </Link>
-          <Link to="/tests" className="hover:bg-gray-700 p-2 rounded">
-            Pagina Teste
           </Link>
           <Button
             className="bg-red-500 hover:bg-red-600 mt-6 w-full text-white"

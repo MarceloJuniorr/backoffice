@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Input, Button, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Card, Spacer, Tooltip } from '@nextui-org/react';
-import { EditIcon, DeleteIcon, EyeIcon } from '../components/Icons'; // Assumindo que os ícones estão em uma pasta "Icons"
+import { Input, Button, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Card, Spacer } from '@nextui-org/react';
 import useAxios from '../api';  // O arquivo onde você configura o axios para fazer as chamadas HTTP
 
 // Definir o tipo para os usuários
@@ -16,7 +15,7 @@ const Users = () => {
   const [search, setSearch] = useState('');
   const [newUser, setNewUser] = useState({
     username: '',
-    email: '',
+    password: '',
   });
   const api = useAxios()
 
@@ -44,7 +43,7 @@ const Users = () => {
       );
       alert('Usuário adicionado!');
       fetchUsers();  // Atualiza a lista de usuários
-      setNewUser({ username: '', email: '' }); // Limpa o formulário
+      setNewUser({ username: '', password: '' }); // Limpa o formulário
     } catch (error) {
       console.error('Erro ao adicionar usuário', error);
     }
@@ -67,21 +66,7 @@ const Users = () => {
       case "actions":
         return (
           <div className="relative flex items-center gap-2">
-            <Tooltip content="Visualizar">
-              <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
-                <EyeIcon />
-              </span>
-            </Tooltip>
-            <Tooltip content="Editar usuário">
-              <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
-                <EditIcon />
-              </span>
-            </Tooltip>
-            <Tooltip color="danger" content="Excluir usuário">
-              <span className="text-lg text-danger cursor-pointer active:opacity-50">
-                <DeleteIcon />
-              </span>
-            </Tooltip>
+
           </div>
         );
       default:
@@ -91,9 +76,10 @@ const Users = () => {
 
   const columns = [
     { name: "Usuário", uid: "username" },
-    { name: "Email", uid: "email" },
     { name: "Ações", uid: "actions" },
   ];
+
+
 
   return (
     <Card style={{ maxWidth: '800px', padding: '20px', margin: 'auto', marginTop: '50px' }}>
@@ -116,10 +102,11 @@ const Users = () => {
       />
       <Spacer y={1} />
       <Input
-        isClearable
-        placeholder="Email"
-        value={newUser.email}
-        onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+        
+        placeholder="Senha"
+        value={newUser.password}
+        type={"password"}
+        onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
         fullWidth
       />
       <Spacer y={1} />

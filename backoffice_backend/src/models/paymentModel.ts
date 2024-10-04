@@ -29,6 +29,7 @@ export const updatePaymentEntry = async (id: number, paymentData: Prisma.Payment
   const updatedPayment = await prisma.payment.update({
     where: { id: id },
     data: {
+      supplierId: paymentData.supplierId,
       paymentType: paymentData.paymentType,
       amount: paymentData.amount,
       dueDate: paymentData.dueDate, // Atualiza a data, se fornecida

@@ -1,6 +1,10 @@
 import { Request, Response } from 'express';
 import { createPayment, getPayments, updatePaymentEntry as updatePaymentEntryModel } from '../models/paymentModel';
 
+const convertToISODateTime = (dateString: string): string => {
+  // Adiciona "T00:00:00Z" para completar o formato ISO-8601 com o tempo
+  return new Date(dateString).toISOString();
+};
 // Criar um novo pagamento
 export const createPaymentEntry = async (req: Request, res: Response) => {
   try {
@@ -24,6 +28,14 @@ export const getPaymentEntries = async (_req: Request, res: Response) => {
 // Atualizar um pagamento existente
 export const updatePaymentEntry = async (req: Request, res: Response) => {
   try {
+    console.log(typeof(req.body.paymentDate));
+
+    req.body = {
+      ...req.body,
+      dueDate: convertToISODateTime(req.body.dueDate),
+      
+      paymentDate: req.body.paymentDate === '' ? null : req.body.paymentDate
+    }
     const updatedPayment = await updatePaymentEntryModel(parseInt(req.params.id), req.body);
     res.status(200).json(updatedPayment);
   } catch (error) {
@@ -32,3 +44,4 @@ export const updatePaymentEntry = async (req: Request, res: Response) => {
     res.status(400).json({ error: 'Erro ao atualizar pagamento' });
   }
 };
+  

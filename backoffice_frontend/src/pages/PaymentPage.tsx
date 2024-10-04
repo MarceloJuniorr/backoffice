@@ -1,10 +1,13 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Button, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Card, Spacer, Input, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from '@nextui-org/react';
-import { FaMoneyBill, FaCheckCircle, FaTimesCircle, FaWallet, FaCopy, FaRegMoneyBillAlt, FaEdit, FaPlus } from 'react-icons/fa';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { Button, Card, Spacer, Input, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, CardHeader } from '@nextui-org/react';
+import { FaMoneyBill, FaCheckCircle, FaTimesCircle, FaWallet, FaCopy, FaPlus } from 'react-icons/fa';
 import useAxios from '../api';
 import moment from 'moment';
 import { DateRangePicker, RangeValue, DateValue } from '@nextui-org/react';
-import { parseAbsoluteToLocal } from '@internationalized/date';
+import { parseDate } from '@internationalized/date';
+import { EditIcon } from '../components/Icons';
+import TableComponent from '../components/Table';
+import { IconType } from 'react-icons';
 
 interface Payment {
   id: number;
@@ -24,6 +27,54 @@ interface Supplier {
   name: string;
   cnpj: string;
 }
+interface DataItem {
+  amount: number;
+  boletoCode: string;
+  description: string;
+  dueDate: string;
+  id: number;
+  paymentDate: string;
+  paymentType: string;
+  status: string;
+  store: string;
+  supplierId: number;
+  supplier: string;
+
+}
+
+const cardComponent = (icon: IconType, title: string, value: string, color: string) => (
+  <Card className={`border-none bg-${color}-500 text-white`}> {/* Cor dinâmica */}
+    <CardHeader className="justify-between" style={{paddingBottom: 0}}>
+      {/* Renderizando o ícone passado como parâmetro */}
+      {React.createElement(icon, { size: 32 })} 
+      <h4 className="font-bold text-large">{title}</h4>
+    </CardHeader>
+    <div className="flex items-center justify-center">
+      <div className="text-right">
+        <p className="text-2xl font-bold">{value}</p>
+      </div>
+    </div>
+  </Card>
+);
+
+const columns = [
+  { uid: "id", name: "ID", sortable: true },
+  { uid: "description", name: "Descrição", sortable: true, hiddenOnMobile: true },
+  { uid: "amount", name: "Valor", sortable: true },
+//  { uid: "boletoCode", name: "Código do Boleto", sortable: true, hiddenOnMobile: true },
+  { uid: "dueDate", name: "Data de Vencimento", sortable: true, isDate: true },
+  { uid: "paymentType", name: "Tipo de Pagamento", sortable: true, hiddenOnMobile: true }, // Esconder em mobile
+  { uid: "status", name: "Status", sortable: true },
+  { uid: "store", name: "Loja", sortable: true, hiddenOnMobile: true }, // Esconder em mobile
+  { uid: "supplier", name: "Fornecedor", sortable: true, hiddenOnMobile: true },
+  { uid: "actions", name: "Ações" },
+];
+
+const getDate = (date: Date, days : number = 0): string => {
+  date.setDate(date.getDate() + days); // Adiciona 7 dias
+  return date.toISOString().split('T')[0]; // Formata para 'YYYY-MM-DD'
+};
+
 
 const PaymentPage = () => {
   const [payments, setPayments] = useState<Payment[]>([]);
@@ -42,14 +93,25 @@ const PaymentPage = () => {
     store: 'Supermercado',
     paymentDate: '',
   });
-  const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
+  const [selectedPayment, setSelectedPayment] = useState<Payment>({
+    id: 0,
+    supplierId: 0,
+    description: '',
+    amount: 0,
+    dueDate: '',
+    status: 'Aberto',
+    boletoCode: '',
+    paymentType: 'Boleto',
+    store: 'Supermercado',
+    paymentDate: '',
+  });
   const [supplierSearch, setSupplierSearch] = useState<string>(''); // Campo para busca de fornecedor
   const [isAddModalOpen, setAddModalOpen] = useState(false);
   const [isEditModalOpen, setEditModalOpen] = useState(false);
 
   const [dateRange, setDateRange] = useState<RangeValue<DateValue>>({
-    start: parseAbsoluteToLocal(moment().startOf('month').toISOString()), 
-    end: parseAbsoluteToLocal(moment().endOf('month').toISOString()), 
+    start: parseDate(getDate(new Date())),
+    end: parseDate(getDate(new Date(), 7)),
   });
 
   const [selectedStatus, setSelectedStatus] = useState<string>('Todos');
@@ -63,7 +125,7 @@ const PaymentPage = () => {
     return null;
   };
 
-  const fetchSuppliers = useCallback(async () => {
+  const fetchSuppliers = useMemo(async () => {
     try {
       const token = localStorage.getItem('token');
       const response = await api.get('/suppliers', {
@@ -76,18 +138,56 @@ const PaymentPage = () => {
     }
   }, [api]);
 
+
+
   const fetchPayments = useCallback(async () => {
     try {
+      const markAsPaid = async (item: Payment) => {
+        try {
+          const token = localStorage.getItem('token');
+          item.status = 'Pago';
+          item.paymentDate = moment().toISOString(); 
+          await api.put(`/payments/${item.id}`, item, {
+            headers: { authorization: token },
+          });
+          fetchPayments();
+        } catch (error) {
+          console.error('Erro ao marcar pagamento como pago', error);
+        }
+      };
       const token = localStorage.getItem('token');
       const response = await api.get('/payments', {
         headers: { authorization: token },
       });
-      setPayments(response.data);
+      const updatedData = response.data.map((item: DataItem ) => ({
+        ...item,
+        dueDate: getDate(new Date(item.dueDate)),
+        paymentDate: item.paymentDate ? getDate(new Date(item.paymentDate)) : '',
+        supplier: suppliers.find(s => s.id === item.supplierId)?.name || 'N/A' ,
+        actions: [
+          {
+            icon: <FaCopy />,
+            tooltip: "Copiar Boleto",
+            onClick: () => copyBoletoCode(item.boletoCode),
+          },
+          {
+            icon: <EditIcon />,
+            tooltip: "Editar",
+            onClick: () => openEditModal(item),
+          },
+          {
+            icon: <FaCheckCircle />,
+            tooltip: "Marcar como Pago",
+            onClick: () => markAsPaid(item),
+          },
+        ],
+      }));
+      setPayments(updatedData);
       setFilteredPayments(response.data);
     } catch (error) {
       console.error('Erro ao buscar pagamentos', error);
     }
-  }, [api]);
+  }, [api, suppliers]);
 
   useEffect(() => {
     const filtered = payments.filter(payment => {
@@ -133,19 +233,7 @@ const PaymentPage = () => {
     }
   };
 
-  const markAsPaid = async (item: Payment) => {
-    try {
-      const token = localStorage.getItem('token');
-      item.status = 'Pago';
-      item.paymentDate = moment().toISOString(); 
-      await api.put(`/payments/${item.id}`, item, {
-        headers: { authorization: token },
-      });
-      fetchPayments();
-    } catch (error) {
-      console.error('Erro ao marcar pagamento como pago', error);
-    }
-  };
+
 
   const copyBoletoCode = (code: string) => {
     navigator.clipboard.writeText(code);
@@ -173,7 +261,6 @@ const PaymentPage = () => {
   const totalAmount = filteredPayments.reduce((acc, p) => acc + p.amount, 0);
 
   useEffect(() => {
-    fetchSuppliers();
     fetchPayments();
   }, [fetchPayments, fetchSuppliers]);
 
@@ -181,49 +268,17 @@ const PaymentPage = () => {
   const stores = ['Supermercado', 'Distribuidora Atacado', 'Empório'];
 
   return (
-    <div className="container mx-auto px-4">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl">Contas a Pagar</h2>
+    <Card style={{ maxWidth: '1020px', padding: '20px', margin: 'auto', marginTop: '50px' }}>
+      <div className="flex justify-center items-center mb-4">
+        <h2 className="text-3xl font-bold">Contas a Pagar</h2>
       </div>
 
       {/* Totalizadores com Ícones */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <Card className="bg-blue-500 text-white">
-          <div className="flex items-center justify-between">
-            <FaMoneyBill size={32} />
-            <div className="text-right">
-              <p className="text-sm">Total de Pagamentos</p>
-              <p className="text-2xl font-bold">{totalPayments}</p>
-            </div>
-          </div>
-        </Card>
-        <Card className="bg-green-500 text-white">
-          <div className="flex items-center justify-between">
-            <FaCheckCircle size={32} />
-            <div className="text-right">
-              <p className="text-sm">Total Pago</p>
-              <p className="text-2xl font-bold">R$ {totalPaid.toFixed(2)}</p>
-            </div>
-          </div>
-        </Card>
-        <Card className="bg-red-500 text-white">
-          <div className="flex items-center justify-between">
-            <FaTimesCircle size={32} />
-            <div className="text-right">
-              <p className="text-sm">Total em Aberto</p>
-              <p className="text-2xl font-bold">R$ {totalOpen.toFixed(2)}</p>
-            </div>
-          </div>
-        </Card>
-        <Card className="bg-yellow-500 text-white">
-          <div className="flex items-center justify-between">
-            <FaWallet size={32} />
-            <div className="text-right">
-              <p className="text-sm">Valor Total</p>
-              <p className="text-2xl font-bold">R$ {totalAmount.toFixed(2)}</p>
-            </div>
-          </div>
-        </Card>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        {cardComponent(FaMoneyBill, 'Lançamentos',`${totalPayments}`, 'blue' )}
+        {cardComponent(FaCheckCircle, 'Pago',`R$ ${totalPaid.toFixed(2)}`, 'green' )}
+        {cardComponent(FaTimesCircle, ' Em Aberto',`R$ ${totalOpen.toFixed(2)}`, 'red' )}
+        {cardComponent(FaWallet, 'Total',`R$ ${totalAmount.toFixed(2)}`, 'yellow' )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
@@ -254,38 +309,14 @@ const PaymentPage = () => {
         </Button>
       </div>
 
-      <Table aria-label="Tabela de contas a pagar">
-        <TableHeader>
-          <TableColumn>Fornecedor</TableColumn>
-          <TableColumn>Valor</TableColumn>
-          <TableColumn>Data de Vencimento</TableColumn>
-          <TableColumn>Status</TableColumn>
-          <TableColumn>Ações</TableColumn>
-        </TableHeader>
-        <TableBody>
-          {filteredPayments.map((item) => (
-            <TableRow key={item.id}>
-              <TableCell>{suppliers.find(s => s.id === item.supplierId)?.name || 'N/A'}</TableCell>
-              <TableCell>R$ {item.amount.toFixed(2)}</TableCell>
-              <TableCell>{moment(item.dueDate).format('DD/MM/YYYY')}</TableCell>
-              <TableCell>{item.status}</TableCell>
-              <TableCell>
-                <Button size="sm" onClick={() => openEditModal(item)} aria-label="Editar pagamento">
-                  <FaEdit />
-                </Button>
-                <Button size="sm" onClick={() => item.boletoCode && copyBoletoCode(item.boletoCode)} aria-label="Copiar código do boleto">
-                  <FaCopy />
-                </Button>
-                {item.status !== 'Pago' && (
-                  <Button size="sm" onClick={() => markAsPaid(item)} aria-label="Marcar como pago">
-                    <FaRegMoneyBillAlt />
-                  </Button>
-                )}
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+      <div className="justify-center" style={{
+    height: "100vh",  // Altura total da viewport
+    margin: "0 auto",  // Centraliza o Card horizontalmente
+  }} >
+    <TableComponent columns={columns} data={filteredPayments} />
+  </div>
+
+
 
       {/* Modal Adicionar */}
       <Modal isOpen={isAddModalOpen} onOpenChange={setAddModalOpen}>
@@ -306,7 +337,13 @@ const PaymentPage = () => {
                   <DropdownTrigger>
                     <Button variant="bordered">{suppliers.find(s => s.id === newPayment.supplierId)?.name || 'Selecione um Fornecedor'}</Button>
                   </DropdownTrigger>
-                  <DropdownMenu onSelectionChange={(keys) => setNewPayment({ ...newPayment, supplierId: Number(Array.from(keys).join('')) })}>
+                  <DropdownMenu 
+                    aria-label="Selecione o tipo de pagamento"
+                    variant="flat"
+                    disallowEmptySelection
+                    selectionMode="single"
+                    selectedKeys={suppliers.find(s => s.id === newPayment.supplierId)?.name}
+                    onSelectionChange={(keys) => setNewPayment({ ...newPayment, supplierId: Number(Array.from(keys).join('')) })}>
                     {filteredSuppliers.map((supplier) => (
                       <DropdownItem key={supplier.id}>{supplier.name} - {supplier.cnpj}</DropdownItem>
                     ))}
@@ -395,14 +432,18 @@ const PaymentPage = () => {
               <Dropdown aria-label="Selecionar fornecedor">
                 <DropdownTrigger>
                   <Button variant="bordered">
-                    {suppliers.find(s => s.id === newPayment.supplierId)?.name || 'Selecione um Fornecedor'}
+                    {suppliers.find(s => s.id === selectedPayment.supplierId)?.name || 'Selecione um Fornecedor'}
                   </Button>
                 </DropdownTrigger>
               <DropdownMenu 
                   aria-label="Lista de fornecedores"
+                  variant="flat"
+                  disallowEmptySelection
+                  selectionMode="single"
+                  selectedKeys={suppliers.find(s => s.id === selectedPayment.supplierId)?.name}
                   onSelectionChange={(keys) => {
                   const selectedKey = Array.from(keys).join(''); // Garantir que selecionamos o valor
-                  setNewPayment({ ...newPayment, supplierId: Number(selectedKey) });
+                  setSelectedPayment({ ...selectedPayment, supplierId: Number(selectedKey) });
     }}
   >
     {filteredSuppliers.map((supplier) => (
@@ -420,11 +461,12 @@ const PaymentPage = () => {
                   aria-label="Campo de valor"
                 />
                 <Spacer y={1} />
+
                 <Input
                   label="Data de Vencimento"
                   type="date"
-                  value={selectedPayment?.dueDate || ''}
-                  onChange={(e) => setSelectedPayment({ ...selectedPayment!, dueDate: e.target.value })}
+                  value={getDate(new Date(selectedPayment.dueDate))}
+                  onChange={(e) => setSelectedPayment({ ...selectedPayment, dueDate: getDate(new Date(e.target.value) )})}
                   fullWidth
                   aria-label="Campo de data de vencimento"
                 />
@@ -473,7 +515,7 @@ const PaymentPage = () => {
           )}
         </ModalContent>
       </Modal>
-    </div>
+    </Card>
   );
 };
 
