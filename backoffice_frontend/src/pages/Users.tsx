@@ -37,7 +37,7 @@ const Users = () => {
     try {
       const token = localStorage.getItem('token');
       await api.post(
-        '/users',
+        '/auth/register',
         newUser,
         { headers: { authorization: token } }
       );
