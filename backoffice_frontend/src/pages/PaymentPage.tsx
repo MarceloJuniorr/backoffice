@@ -43,7 +43,7 @@ interface DataItem {
 }
 
 const cardComponent = (icon: IconType, title: string, value: string, color: string) => (
-  <Card className={`border-none bg-${color}-500 text-white`}> {/* Cor dinâmica */}
+  <Card className={`border-none ${color} text-white`}> {/* Cor dinâmica */}
     <CardHeader className="justify-between" style={{paddingBottom: 0}}>
       {/* Renderizando o ícone passado como parâmetro */}
       {React.createElement(icon, { size: 32 })} 
@@ -275,10 +275,13 @@ const PaymentPage = () => {
 
       {/* Totalizadores com Ícones */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        {cardComponent(FaMoneyBill, 'Lançamentos',`${totalPayments}`, 'blue' )}
-        {cardComponent(FaCheckCircle, 'Pago',`R$ ${totalPaid.toFixed(2)}`, 'green' )}
-        {cardComponent(FaTimesCircle, ' Em Aberto',`R$ ${totalOpen.toFixed(2)}`, 'red' )}
-        {cardComponent(FaWallet, 'Total',`R$ ${totalAmount.toFixed(2)}`, 'yellow' )}
+        {cardComponent(FaMoneyBill, 'Lançamentos',`${totalPayments}`, 'bg-blue-500' )}
+
+        {cardComponent(FaCheckCircle, 'Pago',`R$ ${totalPaid.toFixed(2)}`, 'bg-green-500' )}
+
+        {cardComponent(FaTimesCircle, ' Em Aberto',`R$ ${totalOpen.toFixed(2)}`, 'bg-red-500' )}
+
+        {cardComponent(FaWallet, 'Total',`R$ ${totalAmount.toFixed(2)}`, 'bg-yellow-500' )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
