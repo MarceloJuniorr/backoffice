@@ -8,9 +8,13 @@ const convertToISODateTime = (dateString: string): string => {
 // Criar um novo pagamento
 export const createPaymentEntry = async (req: Request, res: Response) => {
   try {
+    console.log(req.body);
+    
     const payment = await createPayment(req.body);
     res.status(201).json(payment);
   } catch (error) {
+    console.log(error);
+
     res.status(400).json({ error: 'Erro ao criar lançamento de pagamento' });
   }
 };
@@ -21,6 +25,8 @@ export const getPaymentEntries = async (_req: Request, res: Response) => {
     const payments = await getPayments();
     res.status(200).json(payments);
   } catch (error) {
+    console.log(error);
+
     res.status(400).json({ error: 'Erro ao buscar lançamentos' });
   }
 };
@@ -28,6 +34,8 @@ export const getPaymentEntries = async (_req: Request, res: Response) => {
 // Atualizar um pagamento existente
 export const updatePaymentEntry = async (req: Request, res: Response) => {
   try {
+    console.log(req.body);
+
     console.log(typeof(req.body.paymentDate));
 
     req.body = {

@@ -38,4 +38,12 @@ const useAxios = () => {
   return api; // Retorna a instância do Axios
 };
 
+const observerErr = window.console.error;
+window.console.error = (...args) => {
+  if (args[0].includes('ResizeObserver')) {
+    return;
+  }
+  observerErr(...args);
+};
+
 export default useAxios;

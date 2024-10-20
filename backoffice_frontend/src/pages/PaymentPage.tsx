@@ -269,42 +269,37 @@ const PaymentPage = () => {
   const paymentTypes = ['Boleto', 'Cartão de Crédito', 'Transferência', 'Dinheiro'];
   const stores = ['Supermercado', 'Distribuidora Atacado', 'Empório'];
 
-  const handleBoletoCodeChange = (boletoCode: string) => {
-    setNewPayment({ ...newPayment, boletoCode });  // Atualiza o código do boleto no estado
-
-    try {
-      const boleto = validateBoleto(boletoCode);  // Valida o código de boleto e extrai as informações
-
-      // Atualiza o estado com os dados extraídos
-      setNewPayment({
-        ...newPayment,
-        amount: boleto.valor,         // Preenche o valor
-        dueDate: boleto.vencimento,   // Preenche a data de vencimento
-      });
-    } catch (error) {
-      console.error('Código de boleto inválido', error);
-    }
-  };
 
   // Função para validar boleto e extrair dados
-  const validateBoleto = (boletoCode: string) => {
-    // Validação básica do comprimento da linha digitável (46 ou 47 dígitos para boletos)
-    if (boletoCode.length !== 47 && boletoCode.length !== 46) {
-      throw new Error('Código de boleto inválido');
+  const validateBoleto = () => {
+    const boletoCode = newPayment.boletoCode;
+
+    // Verifica se o código do boleto foi inserido
+    if (!boletoCode || boletoCode.length < 47) {
+      console.error('Código de boleto inválido');
+      return;
     }
 
-    // Extrai informações da linha digitável de acordo com o padrão
-    const vencimentoFactor = boletoCode.substring(33, 37); // Fator de vencimento
-    const valor = boletoCode.substring(37); // Valor do boleto
+    try {
+      // Validação básica de exemplo (ajuste conforme sua lógica de validação)
+      const vencimentoFactor = boletoCode.substring(33, 37); // Fator de vencimento
+      const valor = boletoCode.substring(37); // Valor do boleto
 
-    // Calcula a data de vencimento com base no fator de vencimento
-    const baseDate = new Date(1997, 9, 7); // Data base para boletos (07/10/1997)
-    const vencimento = new Date(baseDate.getTime() + (Number(vencimentoFactor) * 24 * 60 * 60 * 1000)); // Soma os dias
+      // Data base para cálculos de vencimento de boletos
+      const baseDate = new Date(1997, 9, 7); // Data base 07/10/1997
+      const vencimento = new Date(baseDate.getTime() + (Number(vencimentoFactor) * 24 * 60 * 60 * 1000));
 
-    return {
-      vencimento: vencimento.toISOString().split('T')[0], // Formata para 'YYYY-MM-DD'
-      valor: parseFloat(valor) / 100,  // Converte valor para formato numérico
-    };
+      // Atualiza o estado newPayment com o valor e data de vencimento
+      setNewPayment({
+        ...newPayment,
+        amount: parseFloat(valor) / 100,  // Ajusta o valor do boleto
+        dueDate: vencimento.toISOString().split('T')[0],  // Formata a data no formato YYYY-MM-DD
+      });
+
+      console.log('Boleto validado com sucesso');
+    } catch (error) {
+      console.error('Erro ao validar o boleto', error);
+    }
   };
 
 
@@ -418,7 +413,7 @@ const PaymentPage = () => {
                 <Input
                   label="Código do Boleto"
                   value={newPayment.boletoCode}
-                  onChange={(e) => handleBoletoCodeChange(e.target.value)}  // Chama a função de validação
+                  onChange={(e) => setNewPayment({ ...newPayment, boletoCode: e.target.value })}  // Chama a função de validação
                   fullWidth
                   aria-label="Campo de código do boleto"
                 />
@@ -460,6 +455,7 @@ const PaymentPage = () => {
                 </Dropdown>
               </ModalBody>
               <ModalFooter>
+                <Button onClick={validateBoleto}>Validar Boleto</Button>
                 <Button onClick={onClose}>Cancelar</Button>
                 <Button onClick={handleAddPayment}>Adicionar</Button>
               </ModalFooter>

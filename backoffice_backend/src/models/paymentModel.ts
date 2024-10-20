@@ -13,7 +13,7 @@ export const createPayment = async (paymentData: Prisma.PaymentCreateManyInput) 
       supplierId: paymentData.supplierId,
       paymentType: paymentData.paymentType,
       amount: paymentData.amount,
-      dueDate: paymentData.dueDate, // Grava somente a data
+      dueDate: paymentData.dueDate,
       store: paymentData.store,
       status: paymentData.status,
       description: paymentData.description,
