@@ -12,7 +12,7 @@ model Payment {
   supplierId  Int
   paymentType String
   amount      Float
-  dueDate     DateTime
+  dueDate     String
   store       String
   status      String
   description String? // Opcional
