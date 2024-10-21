@@ -1,10 +1,10 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
-}
-
-generator client {
-  provider = "prisma-client-js"
 }
 
 model Payment {
@@ -12,12 +12,14 @@ model Payment {
   supplierId  Int
   paymentType String
   amount      Float
-  dueDate     String
+  dueDate     String?   @db.Char(10)
   store       String
   status      String
-  description String? // Opcional
-  boletoCode  String? // Opcional
+  description String?
+  boletoCode  String?
   paymentDate DateTime?
+
+  @@index([supplierId], map: "Payment_supplierId_fkey")
 }
 
 model Supplier {
