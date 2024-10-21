@@ -161,7 +161,6 @@ const PaymentPage = () => {
       });
       const updatedData = response.data.map((item: DataItem) => ({
         ...item,
-        dueDate: getDate(new Date(item.dueDate)),
         paymentDate: item.paymentDate ? getDate(new Date(item.paymentDate)) : '',
         supplier: suppliers.find(s => s.id === item.supplierId)?.name || 'N/A',
         actions: [
