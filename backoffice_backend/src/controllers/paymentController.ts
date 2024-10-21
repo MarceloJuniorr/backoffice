@@ -40,8 +40,7 @@ export const updatePaymentEntry = async (req: Request, res: Response) => {
 
     req.body = {
       ...req.body,
-      dueDate: convertToISODateTime(req.body.dueDate),
-      
+            
       paymentDate: req.body.paymentDate === '' ? null : req.body.paymentDate
     }
     const updatedPayment = await updatePaymentEntryModel(parseInt(req.params.id), req.body);
