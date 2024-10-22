@@ -13,7 +13,7 @@ interface Payment {
   id: number;
   supplierId: number;
   description: string;
-  amount: number;
+  amount: string;
   dueDate: string;
   status: string;
   boletoCode: string;
@@ -28,7 +28,7 @@ interface Supplier {
   cnpj: string;
 }
 interface DataItem {
-  amount: number;
+  amount: string;
   boletoCode: string;
   description: string;
   dueDate: string;
@@ -78,7 +78,7 @@ const newPaymentInitial = {
   id: 0,
   supplierId: 0,
   description: '',
-  amount: 0,
+  amount: '',
   dueDate: '',
   status: 'Aberto',
   boletoCode: '',
@@ -97,7 +97,7 @@ const PaymentPage = () => {
     id: 0,
     supplierId: 0,
     description: '',
-    amount: 0,
+    amount: '',
     dueDate: '',
     status: 'Aberto',
     boletoCode: '',
@@ -115,6 +115,8 @@ const PaymentPage = () => {
   });
 
   const [selectedStatus, setSelectedStatus] = useState<string>('Todos');
+  const [selectedPaymentType, setSelectedPaymentType] = useState<string>('Todos');
+
 
   const api = useAxios();
 
@@ -123,6 +125,30 @@ const PaymentPage = () => {
       return dateValue.toDate("America/Sao_Paulo");
     }
     return null;
+  };
+
+  const formatCurrency = (value: string | number) => {
+    // Remove qualquer caractere que não seja número
+    const stringValue = typeof value === 'number' ? value.toFixed(2) : value;
+
+    const numericValue = stringValue.replace(/\D/g, '');
+
+    // Converte o valor em centavos e formata
+    const formattedValue = (Number(numericValue) / 100).toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    });
+
+    return formattedValue;
+  };
+
+  const parseCurrency = (value: string | number) => {
+    // Converter o valor para string caso seja um número
+    const stringValue = typeof value === 'number' ? value.toFixed(2) : value;
+
+    // Remove símbolos de moeda e pontuações
+    const numericValue = stringValue.replace(/\D/g, '');
+    return Number((Number(numericValue) / 100).toFixed(2)); // Retorna o valor numérico em formato decimal
   };
 
   const fetchSuppliers = useMemo(async () => {
@@ -163,6 +189,7 @@ const PaymentPage = () => {
         ...item,
         paymentDate: item.paymentDate ? getDate(new Date(item.paymentDate)) : '',
         supplier: suppliers.find(s => s.id === item.supplierId)?.name || 'N/A',
+        amount: formatCurrency(item.amount),
         actions: [
           {
             icon: <FaCopy />,
@@ -199,17 +226,22 @@ const PaymentPage = () => {
       );
       const matchesStatus = selectedStatus === 'Todos' || payment.status === selectedStatus;
 
-      return isInDateRange && matchesStatus;
+      const matchesPaymentTypes = selectedPaymentType === 'Todos' || payment.paymentType === selectedPaymentType;
+
+
+      return isInDateRange && matchesStatus && matchesPaymentTypes;
     });
 
     setFilteredPayments(filtered);
-  }, [payments, dateRange, selectedStatus]);
+  }, [payments, dateRange, selectedStatus, selectedPaymentType]);
 
   const handleAddPayment = async () => {
     try {
       const token = localStorage.getItem('token');
-      console.log(newPayment)
-      await api.post('/payments', newPayment, {
+      const addPayment = { ...newPayment, amount: parseCurrency(newPayment.amount) };
+      console.log(addPayment)
+
+      await api.post('/payments', addPayment, {
         headers: { authorization: token },
       });
       setAddModalOpen(false);
@@ -224,7 +256,8 @@ const PaymentPage = () => {
     if (!selectedPayment) return;
     try {
       const token = localStorage.getItem('token');
-      await api.put(`/payments/${selectedPayment.id}`, selectedPayment, {
+      const updatedPayment = { ...selectedPayment, amount: parseCurrency(selectedPayment.amount) };
+      await api.put(`/payments/${selectedPayment.id}`, updatedPayment, {
         headers: { authorization: token },
       });
       setEditModalOpen(false);
@@ -257,15 +290,17 @@ const PaymentPage = () => {
   };
 
   const totalPayments = filteredPayments.length;
-  const totalPaid = filteredPayments.filter(p => p.status === 'Pago').reduce((acc, p) => acc + p.amount, 0);
-  const totalOpen = filteredPayments.filter(p => p.status === 'Aberto').reduce((acc, p) => acc + p.amount, 0);
-  const totalAmount = filteredPayments.reduce((acc, p) => acc + p.amount, 0);
+  const totalPaid = filteredPayments.filter(p => p.status === 'Pago').reduce((acc, p) => acc + Number(parseCurrency(p.amount)), 0);
+  const totalOpen = filteredPayments.filter(p => p.status === 'Aberto').reduce((acc, p) => Number(acc + parseCurrency(p.amount)), 0);
+  const totalAmount = filteredPayments.reduce((acc, p) => acc + Number(parseCurrency(p.amount)), 0);
 
   useEffect(() => {
     fetchPayments();
   }, [fetchPayments, fetchSuppliers]);
 
   const paymentTypes = ['Boleto', 'Cartão de Crédito', 'Transferência', 'Dinheiro'];
+  const paymentTypesFilter = ['Todos', ...paymentTypes];
+
   const stores = ['Supermercado', 'Distribuidora Atacado', 'Empório'];
 
 
@@ -273,25 +308,28 @@ const PaymentPage = () => {
   const validateBoleto = () => {
     const boletoCode = newPayment.boletoCode;
 
-    // Verifica se o código do boleto foi inserido
+    // Verifica se o código do boleto foi inserido e se tem o tamanho adequado
     if (!boletoCode || boletoCode.length < 47) {
       console.error('Código de boleto inválido');
       return;
     }
 
     try {
-      // Validação básica de exemplo (ajuste conforme sua lógica de validação)
+      // Extração do fator de vencimento e valor do boleto
       const vencimentoFactor = boletoCode.substring(33, 37); // Fator de vencimento
-      const valor = boletoCode.substring(37); // Valor do boleto
+      const valor = boletoCode.substring(37); // Valor do boleto (últimos dígitos)
 
       // Data base para cálculos de vencimento de boletos
       const baseDate = new Date(1997, 9, 7); // Data base 07/10/1997
       const vencimento = new Date(baseDate.getTime() + (Number(vencimentoFactor) * 24 * 60 * 60 * 1000));
 
-      // Atualiza o estado newPayment com o valor e data de vencimento
+      // Formatar o valor do boleto usando a função de formatação
+      const formattedValue = formatCurrency((parseFloat(valor) / 100).toString());
+
+      // Atualiza o estado newPayment com o valor e a data de vencimento formatados
       setNewPayment({
         ...newPayment,
-        amount: parseFloat(valor) / 100,  // Ajusta o valor do boleto
+        amount: formattedValue,  // Aplica a máscara de moeda
         dueDate: vencimento.toISOString().split('T')[0],  // Formata a data no formato YYYY-MM-DD
       });
 
@@ -313,14 +351,14 @@ const PaymentPage = () => {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         {cardComponent(FaMoneyBill, 'Lançamentos', `${totalPayments}`, 'bg-blue-500')}
 
-        {cardComponent(FaCheckCircle, 'Pago', `R$ ${totalPaid.toFixed(2)}`, 'bg-green-500')}
+        {cardComponent(FaCheckCircle, 'Pago', `${formatCurrency(totalPaid)}`, 'bg-green-500')}
 
-        {cardComponent(FaTimesCircle, ' Em Aberto', `R$ ${totalOpen.toFixed(2)}`, 'bg-red-500')}
+        {cardComponent(FaTimesCircle, ' Em Aberto', `${formatCurrency(totalOpen)}`, 'bg-red-500')}
 
-        {cardComponent(FaWallet, 'Total', `R$ ${totalAmount.toFixed(2)}`, 'bg-yellow-500')}
+        {cardComponent(FaWallet, 'Total', `${formatCurrency(totalAmount)}`, 'bg-yellow-500')}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
         <DateRangePicker
           aria-label="Selecionar intervalo de datas"
           value={dateRange}
@@ -328,7 +366,7 @@ const PaymentPage = () => {
         />
         <Dropdown aria-label="Selecionar status do pagamento">
           <DropdownTrigger>
-            <Button variant="bordered">{selectedStatus}</Button>
+            <Button variant="bordered">STATUS DE PAGAMENTO</Button>
           </DropdownTrigger>
           <DropdownMenu
             aria-label="Seleção de status"
@@ -341,6 +379,23 @@ const PaymentPage = () => {
             <DropdownItem key="Todos">Todos</DropdownItem>
             <DropdownItem key="Aberto">Aberto</DropdownItem>
             <DropdownItem key="Pago">Pago</DropdownItem>
+          </DropdownMenu>
+        </Dropdown>
+        <Dropdown aria-label="Selecionar Tipo de Pagamento">
+          <DropdownTrigger>
+            <Button variant="bordered">TIPO DE PAGAMENTO</Button>
+          </DropdownTrigger>
+          <DropdownMenu
+            aria-label="Seleção de status"
+            variant="flat"
+            disallowEmptySelection
+            selectionMode="single"
+            selectedKeys={selectedPaymentType}
+            onSelectionChange={(keys) => { setSelectedPaymentType(Array.from(keys).join('')) }}
+          >
+            {paymentTypesFilter.map((type) => (
+              <DropdownItem key={type}>{type}</DropdownItem>
+            ))}
           </DropdownMenu>
         </Dropdown>
         <Button onClick={() => setAddModalOpen(true)} startContent={<FaPlus />} aria-label="Adicionar nova conta a pagar">
@@ -391,11 +446,20 @@ const PaymentPage = () => {
                 </Dropdown>
                 <Spacer y={1} />
                 <Input
+                  label="Descrição"
+                  value={newPayment.description}
+                  onChange={(e) => setNewPayment({ ...newPayment, description: e.target.value })}
+                  fullWidth
+                  aria-label="Campo de Descrição"
+                />
+                <Spacer y={1} />
+                <Input
                   label="Valor"
-                  placeholder="Valor"
-                  type="number"
+                  type="string"
+                  placeholder="0.00"
+                  labelPlacement="outside"
                   value={newPayment.amount.toString()}
-                  onChange={(e) => setNewPayment({ ...newPayment, amount: parseFloat(e.target.value) })}
+                  onChange={(e) => setNewPayment({ ...newPayment, amount: formatCurrency(e.target.value) })}
                   fullWidth
                   aria-label="Campo de valor"
                 />
@@ -494,10 +558,25 @@ const PaymentPage = () => {
                 </Dropdown>
                 <Spacer y={1} />
                 <Input
+                  label="Descrição"
+                  value={selectedPayment?.description || ''}
+                  onChange={(e) => setSelectedPayment({ ...selectedPayment, description: e.target.value })}
+                  fullWidth
+                  aria-label="Campo de Descrição"
+                />
+                <Spacer y={1} />
+                <Input
                   label="Valor"
                   type="number"
+                  placeholder="0.00"
+                  labelPlacement="outside"
+                  startContent={
+                    <div className="pointer-events-none flex items-center">
+                      <span className="text-default-400 text-small">$</span>
+                    </div>
+                  }
                   value={selectedPayment?.amount.toString() || ''}
-                  onChange={(e) => setSelectedPayment({ ...selectedPayment!, amount: parseFloat(e.target.value) })}
+                  onChange={(e) => setSelectedPayment({ ...selectedPayment, amount: formatCurrency(e.target.value) })}
                   fullWidth
                   aria-label="Campo de valor"
                 />

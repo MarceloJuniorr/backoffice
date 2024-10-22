@@ -1,5 +1,6 @@
 import { NextUIProvider } from "@nextui-org/react";
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
+import { Helmet } from "react-helmet"; // Importação do react-helmet
 import Login from "./pages/Login";
 import Users from "./pages/Users";
 import Suppliers from "./pages/Suppliers";
@@ -33,18 +34,22 @@ const App = () => {
 
   return (
     <NextUIProvider>
+      <Helmet>
+        <html lang="pt-BR" /> {/* Definir a linguagem da página */}
+        <title>Reconize Backoffice</title>
+      </Helmet>
       <Router>
         <div className="flex">
-        <div className="flex-1 p-4">
-        <Layout>
-            <Routes>
-              <Route path="/" element={<Login />} />
-              <Route path="/users" element={<Users />} />
-              <Route path="/suppliers" element={<Suppliers />} />
-              <Route path="/payments" element={<PaymentPage />} />
-              <Route path="/tests" element={<Tests/>}></Route>
-            </Routes>
-          </Layout>
+          <div className="flex-1 p-4">
+            <Layout>
+              <Routes>
+                <Route path="/" element={<Login />} />
+                <Route path="/users" element={<Users />} />
+                <Route path="/suppliers" element={<Suppliers />} />
+                <Route path="/payments" element={<PaymentPage />} />
+                <Route path="/tests" element={<Tests />}></Route>
+              </Routes>
+            </Layout>
           </div>
 
         </div>
