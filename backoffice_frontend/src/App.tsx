@@ -34,10 +34,6 @@ const App = () => {
 
   return (
     <NextUIProvider>
-      <Helmet>
-        <html lang="pt-BR" /> {/* Definir a linguagem da página */}
-        <title>Reconize Backoffice</title>
-      </Helmet>
       <Router>
         <div className="flex">
           <div className="flex-1 p-4">
