@@ -1,6 +1,5 @@
 import { NextUIProvider } from "@nextui-org/react";
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
-import { Helmet } from "react-helmet"; // Importação do react-helmet
 import Login from "./pages/Login";
 import Users from "./pages/Users";
 import Suppliers from "./pages/Suppliers";
