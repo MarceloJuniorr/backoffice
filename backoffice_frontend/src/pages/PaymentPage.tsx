@@ -61,7 +61,7 @@ const columns = [
   { uid: "id", name: "ID", sortable: true },
   { uid: "description", name: "Descrição", sortable: true, hiddenOnMobile: true },
   { uid: "amount", name: "Valor", sortable: true },
-  //  { uid: "boletoCode", name: "Código do Boleto", sortable: true, hiddenOnMobile: true },
+  { uid: "boletoCode", name: "Código do Boleto", sortable: true, hiddenOnMobile: true },
   { uid: "dueDate", name: "Data de Vencimento", sortable: true, isDate: true },
   { uid: "paymentType", name: "Tipo de Pagamento", sortable: true, hiddenOnMobile: true }, // Esconder em mobile
   { uid: "status", name: "Status", sortable: true },
@@ -82,8 +82,8 @@ const newPaymentInitial = {
   dueDate: '',
   status: 'Aberto',
   boletoCode: '',
-  paymentType: 'Boleto',
-  store: 'Supermercado',
+  paymentType: 'Tipo de Pagamento',
+  store: 'Qual a loja da Despesa?',
   paymentDate: '',
 }
 
@@ -239,6 +239,13 @@ const PaymentPage = () => {
     try {
       const token = localStorage.getItem('token');
       const addPayment = { ...newPayment, amount: parseCurrency(newPayment.amount) };
+      if (addPayment.paymentType === 'Tipo de Pagamento' || addPayment.store === 'Qual a loja da Despesa?') {
+
+        console.error('Preencher campos obrigatórios')
+        alert('Preencher campos obrigatórios')
+
+        return;
+      }
       console.log(addPayment)
 
       await api.post('/payments', addPayment, {
@@ -311,6 +318,7 @@ const PaymentPage = () => {
     // Verifica se o código do boleto foi inserido e se tem o tamanho adequado
     if (!boletoCode || boletoCode.length < 47) {
       console.error('Código de boleto inválido');
+      alert('Código de boleto inválido');
       return;
     }
 

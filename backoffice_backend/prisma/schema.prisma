@@ -10,6 +10,7 @@ datasource db {
 model Payment {
   id          Int       @id @default(autoincrement())
   supplierId  Int
+  userId      Int?
   paymentType String
   amount      Float
   dueDate     String?   @db.Char(10)
@@ -18,8 +19,10 @@ model Payment {
   description String?
   boletoCode  String?
   paymentDate DateTime?
+  createdAt   DateTime? @default(now())
 
   @@index([supplierId], map: "Payment_supplierId_fkey")
+  @@map("payments")
 }
 
 model Supplier {
@@ -27,6 +30,8 @@ model Supplier {
   name    String
   cnpj    String
   address String
+
+  @@map("suppliers")
 }
 
 model User {
