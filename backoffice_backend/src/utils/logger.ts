@@ -1,14 +1,24 @@
-import { pool } from '../../config/db'; // Conexão com o banco de dados
+import { PrismaClient } from '@prisma/client';
+import { User } from '../models/userModel';
 
-export const logAction = async (message: string, username: string) => {
+const prisma = new PrismaClient();
+
+export async function createLogEntry(
+endpoint: string, type: string, idparams: string | null, body: string | null, username: string | undefined | null,
+) {
   try {
-    const logMessage = `${new Date().toISOString()} - ${message} - Usuário: ${username}`;
-
-    // Inserir o log no banco de dados
-    await pool.query('INSERT INTO logs (message) VALUES (?)', [logMessage]);
-
-    console.log('Log gravado no banco de dados.');
-  } catch (error) {
-    console.error('Erro ao gravar log no banco de dados:', error);
+    const user = username || ''
+    await prisma.log.create({
+      data: {
+        endpoint,
+        type,
+        idparams,
+        body,
+        user,
+      },
+    });
+  } catch (logError) {
+    console.error('Erro ao criar entrada de log:', logError);
+    // Lide com o erro de log, se necessário (ex: registrar em outro lugar)
   }
-};
+}

@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { createPayment, getPayments, updatePaymentEntry as updatePaymentEntryModel, deletePayment} from '../models/paymentModel';
+import { createLogEntry } from '../utils/logger';
 
 const convertToISODateTime = (dateString: string): string => {
   // Adiciona "T00:00:00Z" para completar o formato ISO-8601 com o tempo
@@ -9,6 +10,9 @@ const convertToISODateTime = (dateString: string): string => {
 export const createPaymentEntry = async (req: Request, res: Response) => {
   try {
     console.log(req.body);
+    console.log(req.user);
+    
+    createLogEntry(req.originalUrl, req.method,'',req.body, req.user?.username)
     
     const payment = await createPayment(req.body);
     res.status(201).json(payment);
@@ -37,7 +41,7 @@ export const updatePaymentEntry = async (req: Request, res: Response) => {
   try {
     console.log(req.body);
 
-    console.log(typeof(req.body.paymentDate));
+    createLogEntry(req.originalUrl, req.method,'',req.body, req.user?.username)
 
     req.body = {
       ...req.body,
@@ -56,7 +60,7 @@ export const deletePaymentEntry = async (req: Request, res: Response) => {
   try {
     console.log(req.body);
 
-    console.log(typeof(req.body.paymentDate));
+    createLogEntry(req.originalUrl, req.method,'',req.body, req.user?.username)
 
     req.body = {
       ...req.body,

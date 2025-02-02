@@ -3,6 +3,7 @@ import prisma from './prismaClient';
 export interface User {
   id: number,
   role: string,
+  username: string
 }
 
 // Criar um novo usuário

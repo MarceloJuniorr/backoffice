@@ -7,6 +7,7 @@ import paymentRoutes from './routes/paymentRoutes';
 import supplierRoutes from './routes/supplierRoutes';
 import usersRoutes from './routes/usersRoutes';
 import dotenv from 'dotenv';
+import logRoutes from './routes/logRoutes';
 
 dotenv.config();
 
@@ -21,6 +22,7 @@ app.use(express.json());
 app.use('/auth', authRoutes);
 app.use('/payments', paymentRoutes);
 app.use('/suppliers', supplierRoutes);
+app.use('/logs', logRoutes);
 app.use('/users', usersRoutes);
 
 

@@ -8,7 +8,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'supersecret'; // Certifique-se de 
 // Registrar um novo usuário
 export const registerUser = async (req: Request, res: Response) => {
   const { username, password, role } = req.body;
-
+  
   // Verificar se o usuário já existe
   const existingUser = await findUserByUsername(username);
   if (existingUser) {

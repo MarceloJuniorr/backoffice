@@ -11,7 +11,7 @@ export const verifyToken = (req: Request, res: Response, next: NextFunction) => 
   }
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as { id: number; role: string };
+    const decoded = jwt.verify(token, JWT_SECRET) as { id: number; role: string; username: string};
     req.user = decoded; // Armazena o usuário decodificado no objeto `req.user`
     next();
   } catch (error) {
