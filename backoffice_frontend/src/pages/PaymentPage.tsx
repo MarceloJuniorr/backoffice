@@ -8,6 +8,9 @@ import { parseDate } from '@internationalized/date';
 import { EditIcon } from '../components/Icons';
 import TableComponent from '../components/Table';
 import { IconType } from 'react-icons';
+// @ts-ignore
+import { confirmAlert } from 'react-confirm-alert'; // Importa o método principal
+import 'react-confirm-alert/src/react-confirm-alert.css'; // Importa os estilos
 
 interface Payment {
   id: number;
@@ -190,29 +193,37 @@ const PaymentPage = () => {
             return;
           }
       
-          // Confirmação antes de excluir
-          if (typeof window !== 'undefined') { // Verifica se está no navegador
-            const confirmed = confirm(`Deseja excluir o pagamento de ${item.description}?`);
-            if (!confirmed) {
-              return;
-            }
-          } else {
-            // Lógica alternativa para quando não está no navegador (opcional)
-            console.log("Exclusão não confirmada (ambiente de build).");
-          }
-      
-          await api.delete(`/payments/${item.id}`, {
-            headers: { authorization: token },
+          confirmAlert({
+            title: 'Confirmação',
+            message: `Deseja excluir o pagamento de ${item.description}?`,
+            buttons: [
+              {
+                label: 'Sim, Excluir',
+                onClick: async () => { // Adicione o async aqui
+                  try {
+                    await api.delete(`/payments/${item.id}`, {
+                      headers: { authorization: token },
+                    });
+                    fetchPayments();
+                    alert('Pagamento excluído com sucesso!');
+                  } catch (error) {
+                    console.error('Erro ao excluir pagamento', error);
+                    alert('Ocorreu um erro ao excluir o pagamento. Tente novamente.');
+                  }
+                }
+              },
+              {
+                label: 'Não, Cancelar',
+                onClick: () => {
+                  // Ação para o botão "Não" (opcional)
+                  console.log('Exclusão cancelada.');
+                }
+              }
+            ]
           });
-          fetchPayments();
-      
-          // Feedback visual de sucesso
-          alert('Pagamento excluído com sucesso!'); 
       
         } catch (error) {
-          console.error('Erro ao excluir pagamento', error); // Mensagem de erro corrigida
-          // Mensagem de erro amigável ao usuário
-          alert('Ocorreu um erro ao excluir o pagamento. Por favor, tente novamente mais tarde.'); 
+          console.error('Erro ao processar exclusão', error); // Erro fora do confirmAlert
         }
       };
       const token = localStorage.getItem('token');
