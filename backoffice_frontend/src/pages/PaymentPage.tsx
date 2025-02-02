@@ -191,9 +191,14 @@ const PaymentPage = () => {
           }
       
           // Confirmação antes de excluir
-          const confirmed = confirm(`Deseja excluir o pagamento de ${item.description} | id: ${item.id}?`);
-          if (!confirmed) {
-            return;
+          if (typeof window !== 'undefined') { // Verifica se está no navegador
+            const confirmed = confirm(`Deseja excluir o pagamento de ${item.description}?`);
+            if (!confirmed) {
+              return;
+            }
+          } else {
+            // Lógica alternativa para quando não está no navegador (opcional)
+            console.log("Exclusão não confirmada (ambiente de build).");
           }
       
           await api.delete(`/payments/${item.id}`, {
