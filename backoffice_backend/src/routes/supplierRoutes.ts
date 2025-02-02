@@ -6,7 +6,7 @@ const router = Router();
 
 router.post('/', verifyToken, createSupplierEntry);
 router.get('/', verifyToken, getSupplierEntries);
-router.put('/', verifyToken, updateSupplierEntries);
+router.put('/:id', verifyToken, updateSupplierEntries);
 
 
 export default router;
