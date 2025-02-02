@@ -49,3 +49,11 @@ export const getPayments = async () => {
   const payments = await prisma.payment.findMany();
   return payments;
 };
+
+export const deletePayment = async (id: number, paymentData: Prisma.PaymentDeleteManyArgs ) => {
+  const deletePayment = await prisma.payment.delete({
+    where: { id: id }
+  });
+
+  return deletePayment;
+};

@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { createPayment, getPayments, updatePaymentEntry as updatePaymentEntryModel } from '../models/paymentModel';
+import { createPayment, getPayments, updatePaymentEntry as updatePaymentEntryModel, deletePayment} from '../models/paymentModel';
 
 const convertToISODateTime = (dateString: string): string => {
   // Adiciona "T00:00:00Z" para completar o formato ISO-8601 com o tempo
@@ -45,6 +45,25 @@ export const updatePaymentEntry = async (req: Request, res: Response) => {
     }
     const updatedPayment = await updatePaymentEntryModel(parseInt(req.params.id), req.body);
     res.status(200).json(updatedPayment);
+  } catch (error) {
+    console.log(error);
+    
+    res.status(400).json({ error: 'Erro ao atualizar pagamento' });
+  }
+};
+
+export const deletePaymentEntry = async (req: Request, res: Response) => {
+  try {
+    console.log(req.body);
+
+    console.log(typeof(req.body.paymentDate));
+
+    req.body = {
+      ...req.body,
+      paymentDate: req.body.paymentDate === '' ? null : req.body.paymentDate
+    }
+    const deletedPayment = await deletePayment(parseInt(req.params.id), req.body);
+    res.status(200).json(deletedPayment);
   } catch (error) {
     console.log(error);
     

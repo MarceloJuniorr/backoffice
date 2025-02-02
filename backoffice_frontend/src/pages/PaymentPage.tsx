@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Button, Card, Spacer, Input, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, CardHeader } from '@nextui-org/react';
-import { FaMoneyBill, FaCheckCircle, FaTimesCircle, FaWallet, FaCopy, FaPlus } from 'react-icons/fa';
+import { FaMoneyBill, FaCheckCircle, FaTimesCircle, FaWallet, FaCopy, FaPlus, FaTrash  } from 'react-icons/fa';
 import useAxios from '../api';
 import moment from 'moment';
 import { DateRangePicker, RangeValue, DateValue } from '@nextui-org/react';
@@ -181,6 +181,35 @@ const PaymentPage = () => {
           console.error('Erro ao marcar pagamento como pago', error);
         }
       };
+      const deletePayment = async (item: Payment) => {
+        try {
+          const token = localStorage.getItem('token');
+      
+          if (item.status === 'Pago') {
+            alert('Não é possível excluir um pagamento concluído!');
+            return;
+          }
+      
+          // Confirmação antes de excluir
+          const confirmed = confirm(`Deseja excluir o pagamento de ${item.description} | id: ${item.id}?`);
+          if (!confirmed) {
+            return;
+          }
+      
+          await api.delete(`/payments/${item.id}`, {
+            headers: { authorization: token },
+          });
+          fetchPayments();
+      
+          // Feedback visual de sucesso
+          alert('Pagamento excluído com sucesso!'); 
+      
+        } catch (error) {
+          console.error('Erro ao excluir pagamento', error); // Mensagem de erro corrigida
+          // Mensagem de erro amigável ao usuário
+          alert('Ocorreu um erro ao excluir o pagamento. Por favor, tente novamente mais tarde.'); 
+        }
+      };
       const token = localStorage.getItem('token');
       const response = await api.get('/payments', {
         headers: { authorization: token },
@@ -205,6 +234,10 @@ const PaymentPage = () => {
             icon: <FaCheckCircle />,
             tooltip: "Marcar como Pago",
             onClick: () => markAsPaid(item),
+          },          {
+            icon: <FaTrash />,
+            tooltip: "Apagar Registro",
+            onClick: () => deletePayment(item),
           },
         ],
       }));
