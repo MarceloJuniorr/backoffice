@@ -4,12 +4,10 @@ import { User } from '../models/userModel';
 const prisma = new PrismaClient();
 
 export async function createLogEntry(
-endpoint: string, type: string, idparamsInsert: string | object | null, bodyInsert: string | null | Object, username: string | undefined | null,
+endpoint: string, type: string, idparams: string | null, body: string | null, username: string | undefined | null,
 ) {
   try {
-    const body = bodyInsert?.toString()
     const user = username || ''
-    const idparams = idparamsInsert?.toString()
     await prisma.log.create({
       data: {
         endpoint,

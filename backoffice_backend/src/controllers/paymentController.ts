@@ -12,7 +12,7 @@ export const createPaymentEntry = async (req: Request, res: Response) => {
     console.log(req.body);
     console.log(req.user);
     
-    createLogEntry(req.originalUrl, req.method,'',req.body, req.user?.username)
+    createLogEntry(req.originalUrl, req.method,'' ,JSON.stringify(req.body), req.user?.username)
     
     const payment = await createPayment(req.body);
     res.status(201).json(payment);
@@ -41,7 +41,7 @@ export const updatePaymentEntry = async (req: Request, res: Response) => {
   try {
     console.log(req.body);
 
-    createLogEntry(req.originalUrl, req.method,'',req.body, req.user?.username)
+    createLogEntry(req.originalUrl, req.method,req.params.id.toString() ,JSON.stringify(req.body), req.user?.username)
 
     req.body = {
       ...req.body,
@@ -60,7 +60,7 @@ export const deletePaymentEntry = async (req: Request, res: Response) => {
   try {
     console.log(req.body);
 
-    createLogEntry(req.originalUrl, req.method,'',req.body, req.user?.username)
+    createLogEntry(req.originalUrl, req.method,req.params.id.toString() ,JSON.stringify(req.body), req.user?.username)
 
     req.body = {
       ...req.body,
