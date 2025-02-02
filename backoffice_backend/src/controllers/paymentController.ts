@@ -13,9 +13,10 @@ export const createPaymentEntry = async (req: Request, res: Response) => {
     const payment = await createPayment(req.body);
     res.status(201).json(payment);
   } catch (error) {
+
     console.log(error);
 
-    res.status(400).json({ error: 'Erro ao criar lançamento de pagamento' });
+    res.status(400).json({ error: error });
   }
 };
 
@@ -40,7 +41,6 @@ export const updatePaymentEntry = async (req: Request, res: Response) => {
 
     req.body = {
       ...req.body,
-            
       paymentDate: req.body.paymentDate === '' ? null : req.body.paymentDate
     }
     const updatedPayment = await updatePaymentEntryModel(parseInt(req.params.id), req.body);
