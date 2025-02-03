@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import { User } from '../models/userModel';
+import moment from 'moment-timezone';
 
 const prisma = new PrismaClient();
 
@@ -7,6 +7,7 @@ export async function createLogEntry(
 endpoint: string, type: string, idparams: string | null, body: string | null, username: string | undefined | null,
 ) {
   try {
+    const createdAt = moment.tz('America/Sao_Paulo').format('YYYY-MM-DD HH:mm:ss');
     const user = username || ''
     await prisma.log.create({
       data: {
@@ -15,6 +16,7 @@ endpoint: string, type: string, idparams: string | null, body: string | null, us
         idparams,
         body,
         user,
+        createdAt
       },
     });
   } catch (logError) {

@@ -29,7 +29,7 @@ model Log {
   idparams        String?
   body            String?
   user            String
-  createdAt DateTime @default(now())
+  createdAt DateTime @default(now()) @db.Timestamp(3)
 
 }
 
