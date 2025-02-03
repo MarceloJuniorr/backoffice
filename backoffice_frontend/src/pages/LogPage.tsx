@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card } from '@nextui-org/react';
 import useAxios from '../api';
 import moment from 'moment'; // Certifique-se de ter o moment instalado: npm install moment
@@ -30,8 +30,8 @@ const LogPage = () => {
   const [logs, setLogs] = useState<Log[]>([]);
   const [filteredLogs, setFilteredLogs] = useState<Log[]>([]);
   const [dateRange, setDateRange] = useState<RangeValue<DateValue>>({
-    start: parseDate(moment().format('YYYY-MM-DD')), // Use moment para data inicial
-    end: parseDate(moment().add(7, 'days').format('YYYY-MM-DD')), // Use moment para data final
+    start: parseDate(moment().add(-1, 'days').format('YYYY-MM-DD')), // Use moment para data inicial
+    end: parseDate(moment().add(1, 'days').format('YYYY-MM-DD')), // Use moment para data final
   });
 
 
@@ -58,8 +58,10 @@ const LogPage = () => {
   useEffect(() => {
     if (dateRange.start && dateRange.end) {
       const filtered = logs.filter(log => {
-        const logDate = parseDate(log.createdAt);
-        return logDate >= dateRange.start && logDate <= dateRange.end;
+        const logDate = moment(log.createdAt).toDate(); // Converte para Date corretamente
+        const startDate = moment(dateRange.start.toString()).toDate(); // Corrige o erro
+        const endDate = moment(dateRange.end.toString()).toDate(); // Corrige o erro
+        return logDate >= startDate && logDate <= endDate;
       });
       setFilteredLogs(filtered);
     } else {
@@ -70,7 +72,7 @@ const LogPage = () => {
   return (
     <Card style={{ maxWidth: '1150px', padding: '15px', margin: 'auto', marginTop: '25px' }}>
       <div className="flex justify-center items-center mb-4">
-        <h2 className="text-3xl font-bold">Contas a Pagar</h2>
+        <h2 className="text-3xl font-bold">Registros do Sistema</h2>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">

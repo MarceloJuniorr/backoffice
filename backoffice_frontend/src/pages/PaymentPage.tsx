@@ -85,8 +85,8 @@ const newPaymentInitial = {
   dueDate: '',
   status: 'Aberto',
   boletoCode: '',
-  paymentType: 'Boleto',
-  store: 'Supermercado',
+  paymentType: '',
+  store: '',
   paymentDate: '',
 }
 
@@ -104,8 +104,8 @@ const PaymentPage = () => {
     dueDate: '',
     status: 'Aberto',
     boletoCode: '',
-    paymentType: 'Boleto',
-    store: 'Supermercado',
+    paymentType: '',
+    store: '',
     paymentDate: '',
   });
   const [supplierSearch, setSupplierSearch] = useState<string>(''); // Campo para busca de fornecedor
@@ -350,7 +350,7 @@ const PaymentPage = () => {
   const paymentTypes = ['Boleto', 'Cartão de Crédito', 'Transferência', 'Dinheiro'];
   const paymentTypesFilter = ['Todos', ...paymentTypes];
 
-  const stores = ['Supermercado', 'Distribuidora Atacado', 'Empório'];
+  const stores = ['Supermercado', 'Distribuidora Atacado', 'Empório', 'Bruno', 'Outros'];
 
 
   // Função para validar boleto e extrair dados
@@ -530,7 +530,8 @@ const PaymentPage = () => {
                   aria-label="Campo de código do boleto"
                 />
                 <Spacer y={1} />
-                <Dropdown aria-label="Selecionar tipo de pagamento">
+                <p className="text-gray-600 mb-2">Selecione o tipo de pagamento:</p>
+                <Dropdown aria-label="Selecionar tipo de pagamento" >
                   <DropdownTrigger>
                     <Button variant="bordered">{newPayment.paymentType}</Button>
                   </DropdownTrigger>
@@ -548,6 +549,7 @@ const PaymentPage = () => {
                   </DropdownMenu>
                 </Dropdown>
                 <Spacer y={1} />
+                <p className="text-gray-600 mb-2">Selecione a loja:</p>
                 <Dropdown aria-label="Selecionar loja">
                   <DropdownTrigger>
                     <Button variant="bordered">{newPayment.store}</Button>
@@ -600,9 +602,7 @@ const PaymentPage = () => {
                       setSelectedPayment({ ...selectedPayment, supplierId: Number(selectedKey) });
                     }}
                   >
-                    {filteredSuppliers.map((supplier) => (
-                      <DropdownItem textValue={supplier.name} key={supplier.id}>{supplier.name} - {supplier.cnpj}</DropdownItem>
-                    ))}
+                      <DropdownItem textValue={suppliers.find(s => s.id === selectedPayment.supplierId)?.name} key={suppliers.find(s => s.id === selectedPayment.supplierId)?.id}>{suppliers.find(s => s.id === selectedPayment.supplierId)?.name} - {suppliers.find(s => s.id === selectedPayment.supplierId)?.cnpj}</DropdownItem>
                   </DropdownMenu>
                 </Dropdown>
                 <Spacer y={1} />
@@ -648,28 +648,40 @@ const PaymentPage = () => {
                   aria-label="Campo de código do boleto"
                 />
                 <Spacer y={1} />
+                <p className="text-gray-600 mb-2">Selecione o tipo de pagamento:</p>
                 <Dropdown aria-label="Selecionar tipo de pagamento">
                   <DropdownTrigger>
-                    <Button variant="bordered">{newPayment.paymentType}</Button>
+                    <Button variant="bordered">{selectedPayment.paymentType}</Button>
                   </DropdownTrigger>
                   <DropdownMenu
-                    aria-label="Tipos de pagamento"
-                    onSelectionChange={(keys) => {
-                      const selectedKey = Array.from(keys).join(''); // Converter o Set em string
-                      setNewPayment({ ...newPayment, paymentType: selectedKey });
-                    }}
+                    aria-label="Selecione o tipo de pagamento"
+                    variant="flat"
+                    disallowEmptySelection
+                    selectionMode="single"
+                    selectedKeys={selectedPayment.paymentType}
+                    onSelectionChange={(keys) => { setSelectedPayment({ ...selectedPayment, paymentType: Array.from(keys).join('') }) }}
+
                   >
                     {paymentTypes.map((type) => (
                       <DropdownItem key={type}>{type}</DropdownItem>
                     ))}
                   </DropdownMenu>
                 </Dropdown>
+
                 <Spacer y={1} />
+                <p className="text-gray-600 mb-2">Selecione a loja:</p>
                 <Dropdown aria-label="Selecionar loja">
                   <DropdownTrigger>
-                    <Button variant="bordered">{selectedPayment?.store || 'Selecione a Loja'}</Button>
+                    <Button variant="bordered">{selectedPayment.store}</Button>
                   </DropdownTrigger>
-                  <DropdownMenu onSelectionChange={(keys) => setSelectedPayment({ ...selectedPayment!, store: Array.from(keys).join('') })}>
+                  <DropdownMenu
+                    aria-label="Selecione a loja"
+                    variant="flat"
+                    disallowEmptySelection
+                    selectionMode="single"
+                    selectedKeys={selectedPayment.store}
+
+                    onSelectionChange={(keys) => setSelectedPayment({ ...selectedPayment, store: Array.from(keys).join('') })}>
                     {stores.map((store) => (
                       <DropdownItem key={store}>{store}</DropdownItem>
                     ))}
