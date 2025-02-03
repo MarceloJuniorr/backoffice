@@ -7,7 +7,7 @@ export async function createLogEntry(
 endpoint: string, type: string, idparams: string | null, body: string | null, username: string | undefined | null,
 ) {
   try {
-    const createdAt = moment.tz('America/Sao_Paulo').format('YYYY-MM-DD HH:mm:ss');
+    const createdAt = moment.tz('America/Sao_Paulo').toDate();    
     const user = username || ''
     await prisma.log.create({
       data: {
