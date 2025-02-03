@@ -61,6 +61,9 @@ const Sidebar = () => {
           <Link to="/payments" className="hover:bg-gray-700 p-2 rounded">
             Contas a Pagar
           </Link>
+          <Link to="/logs" className="hover:bg-gray-700 p-2 rounded">
+            Registros
+          </Link>
           <Button
             className="bg-red-500 hover:bg-red-600 mt-6 w-full text-white"
             onClick={handleLogout}

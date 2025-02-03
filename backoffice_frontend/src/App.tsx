@@ -8,6 +8,7 @@ import Tests from "./pages/Test";
 
 import Sidebar from "./components/Sidebar";
 import "./styles/globals.css";
+import LogPage from "./pages/LogPage";
 
 // Componente Layout que decide quando renderizar a Sidebar
 const Layout = ({ children }: { children: React.ReactNode }) => {
@@ -42,6 +43,7 @@ const App = () => {
                 <Route path="/users" element={<Users />} />
                 <Route path="/suppliers" element={<Suppliers />} />
                 <Route path="/payments" element={<PaymentPage />} />
+                <Route path="/logs" element={<LogPage />} />
                 <Route path="/tests" element={<Tests />}></Route>
               </Routes>
             </Layout>
